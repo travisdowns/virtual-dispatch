@@ -1,5 +1,13 @@
-This is a template project for a benchmark using google benchmark.
+Code for https://stackoverflow.com/questions/46579750/fastest-implementation-of-simple-virtual-observer-sort-of-pattern-in-c
 
-Copy the project and:
+## Building
 
-1) Add your code to bench_main.cpp
+```
+make
+```
+
+## Running
+
+```
+./release/bench_main
+```

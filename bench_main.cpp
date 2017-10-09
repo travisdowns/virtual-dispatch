@@ -100,10 +100,9 @@ BENCHMARK_F(BenchWithFixture, StaticBPtr)(benchmark::State& state) {
     state.SetItemsProcessed(state.iterations() * vecA.size());
 }
 
-void unswitch_virtual_calls(std::vector<A*>& vec) {
-    // first create a bitmap which specifies whether each element is A or B
-    //        std::array<uint64_t, vec_size / 64> bitmap;
+void virtual_call_unswitch(std::vector<A*>& vec) {
 
+    // first create a bitmap which specifies whether each element is B or C type
     std::vector<uint64_t> bitmap(vec.size() / 64);
 
     for (size_t block = 0; block < bitmap.size(); block++) {
@@ -119,6 +118,8 @@ void unswitch_virtual_calls(std::vector<A*>& vec) {
         }
         bitmap[block] = blockmap;
     }
+
+    // now loop over the bitmap handling all the B elements, and then again for all the C elements
 
     size_t blockidx;
     // B loop
@@ -149,7 +150,7 @@ void unswitch_virtual_calls(std::vector<A*>& vec) {
 
 BENCHMARK_F(BenchWithFixture, UnswitchTypes)(benchmark::State& state) {
     while (state.KeepRunning()) {
-        unswitch_virtual_calls(vecA);
+        virtual_call_unswitch(vecA);
     }
 
     state.SetItemsProcessed(state.iterations() * vecA.size());
