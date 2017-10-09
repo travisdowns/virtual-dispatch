@@ -101,47 +101,50 @@ BENCHMARK_F(BenchWithFixture, StaticBPtr)(benchmark::State& state) {
 }
 
 void unswitch_virtual_calls(std::vector<A*>& vec) {
-// first create a bitmap which specifies whether each element is A or B
-        std::array<uint64_t, vec_size / 64> bitmap;
-        for (size_t block = 0; block < bitmap.size(); block++) {
-            uint64_t blockmap = 0;
-            for (size_t idx = block * 64; idx < block * 64 + 64; idx += 4) {
-                blockmap >>= 4;
+    // first create a bitmap which specifies whether each element is A or B
+    //        std::array<uint64_t, vec_size / 64> bitmap;
 
-                blockmap |=
-                        ((uint64_t)vec[idx + 0]->typecode_ << 60) |
-                        ((uint64_t)vec[idx + 1]->typecode_ << 61) |
-                        ((uint64_t)vec[idx + 2]->typecode_ << 62) |
-                        ((uint64_t)vec[idx + 3]->typecode_ << 63) ;
-            }
-            bitmap[block] = blockmap;
-        }
+    std::vector<uint64_t> bitmap(vec.size() / 64);
 
-        size_t blockidx;
-        // B loop
-        blockidx = 0;
-        for (uint64_t block : bitmap) {
-            block = ~block;
-            while (block) {
-                size_t idx = blockidx + __builtin_ctzl(block);
-                B* obj = static_cast<B*>(vec[idx]);
-                obj->Update();
-                block &= (block - 1);
-            }
-            blockidx += 64;
-        }
+    for (size_t block = 0; block < bitmap.size(); block++) {
+        uint64_t blockmap = 0;
+        for (size_t idx = block * 64; idx < block * 64 + 64; idx += 4) {
+            blockmap >>= 4;
 
-        // C loop
-        blockidx = 0;
-        for (uint64_t block : bitmap) {
-            while (block) {
-                size_t idx = blockidx + __builtin_ctzl(block);
-                C* obj = static_cast<C*>(vec[idx]);
-                obj->Update();
-                block &= (block - 1);
-            }
-            blockidx += 64;
+            blockmap |=
+                    ((uint64_t)vec[idx + 0]->typecode_ << 60) |
+                    ((uint64_t)vec[idx + 1]->typecode_ << 61) |
+                    ((uint64_t)vec[idx + 2]->typecode_ << 62) |
+                    ((uint64_t)vec[idx + 3]->typecode_ << 63) ;
         }
+        bitmap[block] = blockmap;
+    }
+
+    size_t blockidx;
+    // B loop
+    blockidx = 0;
+    for (uint64_t block : bitmap) {
+        block = ~block;
+        while (block) {
+            size_t idx = blockidx + __builtin_ctzl(block);
+            B* obj = static_cast<B*>(vec[idx]);
+            obj->Update();
+            block &= (block - 1);
+        }
+        blockidx += 64;
+    }
+
+    // C loop
+    blockidx = 0;
+    for (uint64_t block : bitmap) {
+        while (block) {
+            size_t idx = blockidx + __builtin_ctzl(block);
+            C* obj = static_cast<C*>(vec[idx]);
+            obj->Update();
+            block &= (block - 1);
+        }
+        blockidx += 64;
+    }
 }
 
 BENCHMARK_F(BenchWithFixture, UnswitchTypes)(benchmark::State& state) {
@@ -174,6 +177,20 @@ BENCHMARK_DEFINE_F(BenchWithFixture, VectorSetAt)(benchmark::State& state) {
 
 BENCHMARK_REGISTER_F(BenchWithFixture, VectorSetAt);
  */
+
+struct Base {
+    int common;
+};
+
+struct DerivedA : Base {};
+struct DerviedB : Base {};
+
+
+
+
+union Union {
+
+};
 
 int main(int argc, char** argv) {
     printf("sizeof(B) = %zu\n", sizeof(B));
