@@ -1,0 +1,9 @@
+debug/*
+release/*
+
+perf.data
+perf.data.old
+
+.*
+
+!.gitignore

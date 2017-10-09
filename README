@@ -1,0 +1,5 @@
+This is a template project for a benchmark using google benchmark.
+
+Copy the project and:
+
+1) Add your code to bench_main.cpp
